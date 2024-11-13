@@ -1,0 +1,64 @@
+<!-- tracker/templates/tracker/chart.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Line Chart</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+<body>
+    <h1>Token Price Chart</h1>
+
+    <script>
+        // Parse the JSON data passed from Django context
+        const data = JSON.parse('{{ chart_data|escapejs }}');
+
+        function renderLineChart(data) {
+            const margin = {top: 20, right: 30, bottom: 30, left: 40};
+            const width = 960 - margin.left - margin.right;
+            const height = 500 - margin.top - margin.bottom;
+
+            const svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Convert date strings to Date objects
+            data.forEach(d => {
+                d.date = new Date(d.date);
+                d.price = +d.price;
+            });
+
+            const x = d3.scaleTime()
+                .domain(d3.extent(data, d => d.date))
+                .range([0, width]);
+
+            const y = d3.scaleLinear()
+                .domain([d3.min(data, d => d.price), d3.max(data, d => d.price)])
+                .nice()
+                .range([height, 0]);
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            svg.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.line()
+                    .x(d => x(d.date))
+                    .y(d => y(d.price))
+                );
+        }
+
+        // Render the chart with the data from Django context
+        renderLineChart(data);
+    </script>
+</body>
+</html>
