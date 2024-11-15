@@ -54,6 +54,9 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.shortcuts import render
 
+def render_index(request):
+    return render(request, 'index.html')
+
 def render_chart(request):
     # Fetch data from CoinGecko API
     url = "https://api.coingecko.com/api/v3/coins/ethereum/market_chart"
@@ -86,8 +89,8 @@ def render_chart(request):
         context = {
             "chart_data": json.dumps(formatted_data)  # Convert to JSON for the frontend
         }
-        import pdb; pdb.set_trace()
-        return render(request, "templates/chart.html", context)
+        return JsonResponse(context)
+        # return render(request, 'index.html', context)
 
     # Handle API error if response code is not 200
     return JsonResponse({"error": "Failed to fetch data from CoinGecko"}, status=500)
